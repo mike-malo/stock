@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>货架后台系统</title>
+    <!-- 引入easyUI的css文件和js库 -->
+    <link rel="stylesheet" type="text/css" href="jq/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="jq/themes/icon.css">
+    <script type="text/javascript" src="jq/jquery.min.js"></script>
+    <script type="text/javascript" src="jq/jquery.easyui.min.js"></script>
+    <style type="text/css">
+        /* 自己定义的样式，去掉超链接的下划线 */
+        .menuA {
+            text-decoration:none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cc" class="easyui-layout" data-options="fit:true">
+
+        <div data-options="region:'north', border: false" style="height:70px;">
+            <h1 style="font-size: 24px; text-align: center;">货架管理后台</h1>
+        </div>
+
+        <div data-options="region: 'west', title: '货架', split:true" style="width: 200px;">
+            <div id="aa" class="easyui-accordion" data-options="fit:true">
+                <div title="货架管理">
+                    <a href="tabs/check.html" class="easyui-linkbutton" style="width: 200px; outline: none;">查看货架</a>
+                    <a href="tabs/add.html" class="easyui-linkbutton" style="width: 200px; outline: none;">添加货架</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="tt" data-options="region:'center', title: '数据区域'" class="easyui-tabs" fit="true">
+            <!-- <div title="数据区域" data-options="closable:true" style="padding:20px;display:none;">
+                数据区域
+            </div> -->
+        </div>
+
+        <div id="content" data-options="region:'center'" style="border-top:0;">
+            <div class="easyui-tabs" data-options="plain:true, fit:true, border:false, selected: -1">
+                
+            </div>
+        </div>
+
+        <div id="p-tools">
+            <a href="javascript:void(0)" class="icon-refresh" onclick="alert('refresh')"></a>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        // var flag = $("#tt").tabs("exists", textContent);
+        // if (flag) {
+        //     // 如果已经存在该选项卡面板了，那么就让其被选中
+        //     $('#tt').tabs('getSelected', textContent).panel('refresh');
+        // }
+        
+        $(".easyui-linkbutton").click(function () {
+            // 1.在点击各分类面板里面的超链接时，要得到超链接里面的文本内容，例如客户管理、联系人管理等
+            let testContext = this.innerHTML;
+            // 2.获得到超链接请求的ur1路径，这个ur1路径很重要，因为待会要从这个url路径处获取响应数据
+            let ur = this.href;
+            // 3.创一个选项卡。由于创建一个选项的代码比较多，所要这里可以抽取成一个函数，并将超链接里面的文本内容与ur1路径传递到该函数中
+            createTabs(testContext, ur);
+            // 4.点击超链接时，由于它总会跳转，但在这里我们要让其不能跳转
+            return false;
+        });
+        
+        // 创建选项卡面板的函数
+        function createTabs(textContent, url) {
+            // 判断选项卡面板是否存在
+            var flag = $("#tt").tabs("exists", textContent);
+            if (flag) {
+                // 如果已经存在该选项卡面板了，那么就让其被选中
+                $('#tt').tabs("select", textContent);
+                $('#tt').tabs('getSelected', url);
+                // $('#tt').tabs('update', {
+                //     tabs: flag,
+                //     options: {
+                //         content: "<iframe src='" + url + "' style='border:0px; width:100%; height:95%'></iframe>"
+                //     }
+                // })
+            } else {
+                // 如果不存在该选项卡面板，那么创建一个新的选项卡面板
+                $('#tt').tabs('add',{
+                    title: textContent,
+                    content: createUrl(url),
+                    closable: true,
+                });
+            }
+        }
+        
+        function createUrl(url) {
+            // return $('#content').load(url);
+            return "<iframe src='" + url + "' style='border:0px; width:100%; height:95%'></iframe>";
+        }
+        
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>查看货架</title>
+        <link rel="stylesheet" type="text/css" href="../jq/themes/default/easyui.css">
+        <link rel="stylesheet" type="text/css" href="../jq/themes/icon.css">
+        <link rel="stylesheet" type="text/css" href="../jq/demo/demo.css">
+        <!-- 表格样式 -->
+        <style>
+            table {
+                border-collapse: collapse;
+                width: 70%;
+            }
+
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+
+            th {
+                background-color: #f2f2f2;
+            }
+
+            tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+
+            tr:hover {
+                background-color: #ddd;
+            }
+
+            button {
+                background-color: #f44336;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                cursor: pointer;
+            }
+
+            button:hover {
+                background-color: #d32f2f;
+            }
+        </style>
+        <script type="text/javascript" src="../jq/jquery.min.js"></script>
+        <script type="text/javascript" src="../jq/jquery.easyui.min.js"></script>
+        <!-- js -->
+        <script type="text/javascript">
+            $(function() {
+                $.ajax({
+                    url: "http://192.168.50.46/oa2/stock/json.php",
+                    dataType: "json",
+                    type: "post",
+                    data: {
+                        task: "shelf_get"
+                    },
+                    success: function(res) {
+                        var dataTable = $("#data-table").find("tbody");
+                        $.each(res.shelfs, function(index, shelf) {
+                            // const shelfInfo = $("<p>").text(`ID: ${shelf.id}, Shelf: ${shelf.shelf}, Layer: ${shelf.layer}, Created: ${shelf.ctime}`);
+                            // if(index % 2 === 0) {
+                            //     dataContainer.append(shelfInfo);
+                            // } else {
+                            //     dataContainer.append(shelfInfo);
+                            // }
+
+                            const row = $("<tr>");
+                            const shelfCell = $("<td>").text(shelf.shelf);
+                            const layerCell = $("<td>").text(shelf.layer);
+                            const actionCell = $("<td>").append(
+                                $("<button>").text("刪除").click(function() {
+                                    $.ajax({
+                                        url: "http://192.168.50.46/oa2/stock/json.php",
+                                        dataType: "json",
+                                        type: "post", 
+                                        data: {
+                                            task: "shelf_del_by_id",
+                                            shelfid: shelf.id
+                                        },
+                                        success: function(res) {
+                                            console.log(res.success);
+                                            if (res.success == true) {
+                                                row.remove();
+                                                console.log("good");
+                                            } else {
+                                                alert("删除失败")
+                                            }
+                                        },
+                                        error: function() {
+                                            console.log("删除数据失败");
+                                        }
+                                    });
+                                })
+                            );
+
+                            const checkCell = $("<td>").append(
+                                $("<button>").text("查看").click(function() {
+                                    // console.log(shelf);
+                                    $.ajax({
+                                        url: "http://192.168.50.46/oa2/stock/json.php",
+                                        dataType: "json",
+                                        type: "post",
+                                        data: {
+                                            task: "shelf_data_get",
+                                            shelf: shelf.shelf
+                                        },
+                                        success: function(res) {
+                                            console.log(res.success);
+                                            if (res.success == true) {
+                                                console.log(res.shelf_data);
+                                            } else {
+                                                alert("查看数据失败");
+                                            }
+                                        },
+                                        error: function() {
+                                            console.log("查看数据错误");
+                                        }
+                                    })
+                                })
+                            );
+
+                            row.append(shelfCell, layerCell, checkCell, actionCell)
+                            dataTable.append(row);
+                        })
+                    },
+                    error: function() {
+                        console.log("failed");
+                    }
+                });
+                
+            });
+        </script>
+    </head>
+    <body>
+        <h2>查看货架信息</h2>
+        <p>以下是货架信息</p>
+        <input type="button" value="刷新" onclick="location.reload()">
+        <input type="button" value="跳转" onclick="window.parent.openTab()">
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>货架</th>
+                    <th>层数</th>
+                    <th>操作</th>
+                    <th>删除</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </body>
+</html>

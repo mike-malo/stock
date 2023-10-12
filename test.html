@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>货架后台系统</title>
+    <!-- 引入easyUI的css文件和js库 -->
+    <link rel="stylesheet" type="text/css" href="jq/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="jq/themes/icon.css">
+    <script type="text/javascript" src="jq/jquery.min.js"></script>
+    <script type="text/javascript" src="jq/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="jq/locale/easyui-lang-zh_CN.js"></script>
+    <style type="text/css">
+        table {
+            border-collapse: collapse;
+            /* width: 70%; */
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding-inline: 4px;
+            /* margin-inline: 4px; */
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+
+        button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #d32f2f;
+        }
+
+        #box{
+            /* height: 400px;
+            width: 600px; */
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        ul{
+            height: 30px;
+            width: 600px;
+            padding: 0;
+            margin: 0;
+        }
+        li{
+            display: block;
+            text-align: center;
+            width: 100px;
+            float: left;
+            list-style: none;
+            cursor: pointer;
+            height: 30px;
+            line-height: 30px;
+        }
+        .choice{
+            background: #409EFF;
+            color: #fff;
+        }
+        .tab-item{
+            display: none;
+        }
+        .show{
+            display: block;
+        }
+        #shelf_title {
+            font-weight: bolder;
+        }
+    </style>
+</head>
+<body>
+    <h1>备料后台管理系统</h1>
+    <ul>
+        <li tabid="1" class="choice">查看货架</li>
+        <li tabid="2">添加货架</li>
+        <li tabid="3">查看货物</li>
+    </ul>
+    <div id="box">
+        <!-- 查看货架 -->
+        <div id="tab-item1" class="tab-item show">
+                <h2>查看货架信息</h2>
+                <p>以下是货架信息</p>
+                <!-- <input type="button" value="刷新" onclick="location.reload()"> -->
+                <!-- <input type="button" value="跳转" onclick="window.parent.openTab()"> -->
+                <table id="data-table">
+                    <thead>
+                        <tr>
+                            <th>货架</th>
+                            <th>层数</th>
+                            <th>操作</th>
+                            <!-- <th>删除</th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                </table>
+        </div>
+        <!-- 添加货架 -->
+        <div id="tab-item2" class="tab-item">
+                <h2>添加货架</h2>
+                <p>以下是添加货架表单</p>
+                <!-- <input type="button" value="刷新" onclick="location.reload()"> -->
+                <div style="margin:20px 0;"></div>
+                <div class="easyui-panel" title="添加货架" style="width:300px">
+                    <div>
+                        <form id="ff" method="post">
+                            <table cellpadding="5">
+                                <tr>
+                                    <td>货架名称: </td>
+                                    <td><input class="easyui-textbox" type="text" name="shelf" data-options="required:true"></input></td>
+                                </tr>
+                                <tr>
+                                    <td>货架层数: </td>
+                                    <td><input class="easyui-textbox" type="text" name="layer" data-options="required:true"></input></td>
+                                </tr>
+                            </table>
+                        </form>
+                        <div style="text-align:center;padding:5px">
+                            <a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()">创建货架</a>
+                            <a href="javascript:void(0)" class="easyui-linkbutton" onclick="clearForm()">清空</a>
+                        </div>
+                    </div>
+                </div>
+        </div>
+        <!-- 查看货物 -->
+        <div id="tab-item3" class="tab-item">
+            <!-- 查看货物 -->
+            <h2>查看货物信息</h2>
+            <!-- <input type="button" value="刷新" onclick="location.reload()"> -->
+            <!-- <input type="button" value="跳转" onclick="window.parent.openTab()"> -->
+            <!-- <tr>
+                <th>当前查看的货架名称: </th>
+                <td><p id="shelf_title"></p></td>
+            </tr>
+            <br><br> -->
+            <tr>
+                <th>选择货架</th>
+                <td>
+                    <select>
+                        <option>请选择货架</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option>请选择层数</option>
+                    </select>
+                </td>
+                <input id="search" name="keyword" class="easyui-searchbox" data-options="prompt: '请输入需要搜索的编号', searcher: doSeacrch" ">
+            </tr>
+            <br><br>
+            <table id="shelf-data-table">
+
+                <thead>
+                    <tr>
+                        <th>工程编号</th>
+                        <th>图纸编号</th>
+                        <th>数量</th>
+                        <th>所在货架</th>
+                        <th>所在层数</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script type="text/javascript">
+    
+    $(function() {
+        check_data();
+    });
+
+    $("li").click(function() {
+        // 修改tab标签样式
+        $(this).addClass("choice").siblings().removeClass("choice");
+        var itemId = $(this).attr("tabid");
+        // 如果选择查看货物标签, 则重新获取货架数据
+        if (itemId == 1) {
+            $("#data-table tbody").empty();
+            check_data();
+        } else {
+            $("#shelf-data-table").find("tbody").empty();
+        }
+        // if (itemId == 3) {
+        //     $("#shelf-data-table").empty();
+        // }
+        $("#tab-item" + itemId).addClass("show").siblings().removeClass("show");
+    })
+
+    function check_data() {
+        $.ajax({
+            url: "http://192.168.50.46/oa2/stock/json.php",
+            dataType: "json",
+            type: "post",
+            data: {
+                task: "shelf_get"
+            },
+            success: function(res) {
+                console.log(res.shelfs.length)
+                var dataTable = $("#data-table").find("tbody");
+                $.each(res.shelfs, function(index, shelf) {
+                    // const shelfInfo = $("<p>").text(`ID: ${shelf.id}, Shelf: ${shelf.shelf}, Layer: ${shelf.layer}, Created: ${shelf.ctime}`);
+                    // if(index % 2 === 0) {
+                    //     dataContainer.append(shelfInfo);
+                    // } else {
+                    //     dataContainer.append(shelfInfo);
+                    // }
+
+                    const row = $("<tr>");
+                    const shelfCell = $("<td>").text(shelf.shelf);
+                    const layerCell = $("<td>").text(shelf.layer);
+
+                    const checkCell = $("<td>").append(
+                        $("<button>").text("查看").click(function() {
+                            // console.log(shelf);
+                            $.ajax({
+                                url: "http://192.168.50.46/oa2/stock/json.php",
+                                dataType: "json",
+                                type: "post",
+                                data: {
+                                    task: "shelf_data_get",
+                                    shelf: shelf.shelf
+                                },
+                                success: function(res) {
+                                    if (res.success == true) {
+                                        if (res.shelf_data.length != 0) {
+                                            console.log(res);
+                                            cell_data(res.shelf_data);
+                                        } else {
+                                            $.messager.alert("提示", "该货架没有存货");
+                                        }
+                                    } else {
+                                        alert("查看数据失败");
+                                    }
+                                },
+                                error: function() {
+                                    console.log("查看数据错误");
+                                }
+                            })
+                        })
+                    );
+
+                    const actionCell = $("<td>").append(
+                        $("<button>").text("刪除").click(function() {
+
+                            $.messager.confirm("操作提示", "确定要删除此货架吗？", function(check) {
+                                if (check) {
+                                    $.ajax({
+                                        url: "http://192.168.50.46/oa2/stock/json.php",
+                                        dataType: "json",
+                                        type: "post", 
+                                        data: {
+                                            task: "shelf_del_by_id",
+                                            shelfid: shelf.id
+                                        },
+                                        success: function(res) {
+                                            if (res.success == true) {
+                                                row.remove();
+                                            } else {
+                                                $.messager.alert("提示", "删除失败", "error");
+                                            }
+                                        },
+                                        error: function() {
+                                            $.messager.alert("提示", "删除数据失败", "error");
+                                        }
+                                    });
+                                }
+                            })
+                        })
+                    );
+  
+                    row.append(shelfCell, layerCell, checkCell)
+                    dataTable.append(row);
+                })
+            },
+            error: function() {
+                console.log("failed");
+            }
+        });
+    }
+
+    // $("li").click(function(){
+    //     // 修改tab标签样式
+    //     $(this).attr("class","choice")
+    //     $(this).siblings().attr("class","")
+
+    //     // 获取tab ID
+    //     var itemId = $(this).attr("tabid")-1;
+
+    //     // 切换到指定tab
+    //     $("#box").find("#tab-item:eq("+itemId+")").attr("class","show")
+    //     $("#box").find("#tab-item:eq("+itemId+")").siblings().attr("class","tab-item")
+    // })
+
+    function submitForm(){
+        // $('#ff').form('submit');
+
+        const formData = $('#ff').serializeArray();
+        formData.push({ name: 'task', value: 'shelf_add' });
+
+        $.ajax({
+            type: "POST",
+            url: "http://192.168.50.46/oa2/stock/json.php",
+            data: formData,
+            dataType: "json",
+            success: function(res) {
+                if (res.success == false) {
+                    $.messager.alert('提示', res.msg, 'error');
+                } else {
+                    $.messager.alert('提示', '货架添加成功');
+                    clearForm();
+                }
+            },
+            error: function() {
+                $.messager.alert('提示', '货架添加失败', 'error');
+            }
+        });
+    }
+
+    function clearForm(){
+        $('#ff').form('clear');
+    }
+
+    function cell_data(res) {
+        $($("body ul li")[2]).addClass("choice").siblings().removeClass("choice");
+        $("#tab-item3").addClass("show").siblings().removeClass("show");
+        
+        var dataTable = $("#shelf-data-table").find("tbody");
+        dataTable.empty();
+        // console.log(res[0].shelf);
+        // $("#shelf_title").text(res[0].shelf);
+        $.each(res, function(index, res) {
+            const row = $("<tr>");
+            const pjnoCell = $("<td>").text(res.pjno);
+            const nameCell = $("<td>").text(res.name);
+            const numCell = $("<td>").text(res.num);
+            const shelfCell = $("<td>").text(res.shelf);
+            const layerCell = $("<td>").text(res.layer);
+            row.append(row, pjnoCell, nameCell, numCell, shelfCell, layerCell);
+            dataTable.append(row);
+        })
+    }
+
+    function doSeacrch(value) {
+        // $.messager.alert('搜索内容为: ', value);
+
+        const formData = $('#search').serializeArray();
+        formData.push({ name: 'task', value: 'shelf_data_get' });
+        formData.push({ name: 'keyword', value: value });
+        $.ajax({
+            type: "POST",
+            url: "http://192.168.50.46/oa2/stock/json.php",
+            data: formData,
+            dataType: "json",
+            success: function(res) {
+                if (res.success == false) {
+                    $.messager.alert('提示', res.msg, 'error');
+                } else {
+                    // console.log(res);
+                    cell_data(res.shelf_data);
+                    
+                    // $.messager.alert('提示', '货架添加成功');
+                }
+            },
+            error: function() {
+                $.messager.alert('提示', '货架添加失败', 'error');
+            }
+        });
+    }
+
+   </script>
+</body>
+</html>
